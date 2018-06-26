@@ -69,7 +69,7 @@ public class Algorithm implements Runnable {
 				// check if we have a clear line of sight on the ENTIRE next wall:
 				if( hasLosOnEntireWall(a,b) ) {
 					// move towards the wall we are CURRENTLY facing
-					Point m = g.getPointOnLine(pos, los);
+					Point m = g.getPointOnLine(pos, los, data.getPolygon());
 					updatePos(m);
 				}
 				// check whether we are in the convex or concave case
@@ -85,19 +85,19 @@ public class Algorithm implements Runnable {
 					System.out.println("CONVEX!");
 					// extend the prev/a line and get a point on that line
 					Point target = g.extendPolygonLine(prev, a, poly);
-					Point p = g.getPointOnLine(a, target);
+					Point p = g.getPointOnLine(a, target, data.getPolygon());
 					moveToPoint(p, target);
 					
 					ArrayList<Point> inTriangle = g.pointsInTriangle(poly, pos, a, b);
 					if( inTriangle == null) {
-						updateLOS( g.getPointOnLine(a, b));
+						updateLOS( g.getPointOnLine(a, b, data.getPolygon()));
 						redrawAndSleep(300);
 					} else {
 						ArrayList<Point> intersects = new ArrayList<Point>();
 						for(int i = 0, is = inTriangle.size(); i < is; i++)
 							intersects.add( g.lineIntersect(pos, inTriangle.get(i), a, b));
 						g.orderPoints(intersects, a, b);
-						updateLOS( g.getPointOnLine(a, intersects.get(0)));
+						updateLOS( g.getPointOnLine(a, intersects.get(0), data.getPolygon()));
 					}
 					//getLosOnWall(a,b);
 				}
@@ -130,7 +130,7 @@ public class Algorithm implements Runnable {
 		for(int i = 0, is = inTriangle.size(); i < is; i++)
 			intersects.add( g.lineIntersect(pos, los, p, inTriangle.get(i)));
 		g.orderPoints(intersects, pos, los);
-		Point goal = g.getPointOnLine(intersects.get(intersects.size()-1), los);
+		Point goal = g.getPointOnLine(intersects.get(intersects.size()-1), los, data.getPolygon());
 		animateMoveAlongPoints(intersects, goal, p);
 		updateLOS(p);
 		updatePos(p);
@@ -150,7 +150,7 @@ public class Algorithm implements Runnable {
 		}
 		if( inTriangle == null) {
 			// get an los on this line
-			updateLOS(g.getPointOnLine( a, b));
+			updateLOS(g.getPointOnLine( a, b, data.getPolygon()));
 			return;
 		}
 		// get the intersections of these points with the line pos/los
@@ -158,7 +158,7 @@ public class Algorithm implements Runnable {
 		for(int i = 0, is = inTriangle.size(); i < is; i++)
 			intersects.add( g.lineIntersect(pos, los, target, inTriangle.get(i)) );
 		g.orderPoints(intersects, pos, los);
-		Point goal = g.getPointOnLine(los, intersects.get( intersects.size() - 1) );
+		Point goal = g.getPointOnLine(los, intersects.get( intersects.size() - 1), data.getPolygon() );
 		animateMoveAlongPoints( intersects, goal, target);
 		
 		data.addLineToDraw(new Line(a, b) );
@@ -167,14 +167,14 @@ public class Algorithm implements Runnable {
 		// rotate towards this wall
 		inTriangle = g.pointsInTriangle(poly, pos, a, b);
 		if( inTriangle == null ) {
-			updateLOS(g.getPointOnLine(a, b));
+			updateLOS(g.getPointOnLine(a, b, data.getPolygon()));
 			return;
 		}
 		intersects = new ArrayList<Point>();
 		for(int i = 0, is = inTriangle.size(); i < is; i++)
 			intersects.add( g.lineIntersect(pos, g.extendLine(pos, inTriangle.get(i)), a, b));
 		g.orderPoints(intersects, b, a);
-		goal = g.getPointOnLine(intersects.get(intersects.size()-1), a);
+		goal = g.getPointOnLine(intersects.get(intersects.size()-1), a, data.getPolygon());
 		animateRotateUsingPoints(intersects, goal);
 		
 	}

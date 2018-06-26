@@ -26,6 +26,8 @@ public class Main {
 	GeometryDerivative gem;
 	Thread alg;
 
+	int counter = 0;
+	
 	public Main() {
 		// create the data container
 		// test();
@@ -33,6 +35,7 @@ public class Main {
 		data = new DataContainer();
 		space = new Interspace(this, data, gem);
 		state = ProgramState.BUILDING_POLYGON;
+		//state = ProgramState.TESTING;
 		
 		// create the interspace
 		JFrame frame = new JFrame("CFN");
@@ -140,6 +143,7 @@ public class Main {
 			break;
 		case SET_START_POS:
 			space.setHeadline("Click within the polygon to set the start point");
+			// convert coordinates
 			break;
 		case DONE:
 			space.setHeadline("Algorithm done! Click to redo.");

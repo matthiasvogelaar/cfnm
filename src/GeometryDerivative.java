@@ -1,5 +1,6 @@
 import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class GeometryDerivative implements Geometry  {
 	
@@ -73,9 +74,9 @@ public class GeometryDerivative implements Geometry  {
 		ArrayList<Point> res = new ArrayList<Point>();
 		for(int i = 0, is = points.size(); i < is; i++) {
 			Point p = points.get(i);
-			if( g.pointsOnSameSideOfLine(p, a, b, c) &&
-					g.pointsOnSameSideOfLine(p, b, a, c) &&
-					g.pointsOnSameSideOfLine(p, c, a, b) &&
+			if( pointsOnSameSideOfLine(p, a, b, c) &&
+					pointsOnSameSideOfLine(p, b, a, c) &&
+					pointsOnSameSideOfLine(p, c, a, b) &&
 				!g.pointIsOnLine(p,a,b) && !g.pointIsOnLine(p,b,c) && !g.pointIsOnLine(p,c,a))
 					res.add(p);
 		}
@@ -126,15 +127,33 @@ public class GeometryDerivative implements Geometry  {
 		return g.lineIntersect(a1, a2, b1, b2);
 	}
 
-	@Override
 	public Point lineSegmentIntersect(Point a1, Point a2, Point b1, Point b2) {
 		// TODO Auto-generated method stub
-		return g.lineSegmentIntersect(a1, a2, b1, b2);
+		Point p = g.lineIntersect(a1, a2, b1, b2);
+		if( p == null )
+			return null;
+		if( g.pointIsBetween(p, a1, a2 ) && g.pointIsBetween(p, b1, b2) )
+			return p;
+		return null;
 	}
-
-	@Override
-	public Point getPointOnLine(Point a, Point b) {
-		return g.getPointOnLine(a, b);
+	
+	public Point getPointOnLine(Point a, Point b, ArrayList<Point> otherPoints) {
+		// select a point
+		Point f = null;
+		// find another point which isn't on the current line
+		// make sure we use a random point
+		int offset = ThreadLocalRandom.current().nextInt(0, otherPoints.size() + 1);
+		for(int i = 0, is = otherPoints.size(); i < is; i++) {
+			Point c = otherPoints.get( (i + offset) % is);
+			if( g.pointIsOnLine(c, a, b) )
+				continue;
+			f = c;
+			break;
+		}
+		Point gg = g.extendLineLimited(a, f);
+		Point h = g.extendLineLimited(b, gg);
+		Point c = g.lineIntersect(a, b, h, f);
+		return c;
 	}
 
 	@Override
@@ -142,14 +161,17 @@ public class GeometryDerivative implements Geometry  {
 		return g.pointIsOnLine(p, a, b);
 	}
 
-	@Override
 	public boolean pointIsOnLineSegment(Point p, Point a, Point b) {
-		return g.pointIsOnLineSegment(p, a, b);
+		return g.pointIsOnLine(p, a, b) && g.pointIsBetween(p, a, b);
 	}
 
-	@Override
 	public boolean pointsOnSameSideOfLine(Point a, Point b, Point l1, Point l2) {
-		return g.pointsOnSameSideOfLine(a, b, l1, l2);
+		Point intersect = g.lineIntersect(a,b,l1,l2);
+		if( intersect == null )
+			return true;
+		if( !g.pointIsBetween(intersect, a, b))
+			return true;
+		return false;
 	}
 
 	@Override
@@ -177,6 +199,11 @@ public class GeometryDerivative implements Geometry  {
 	@Override
 	public boolean intersectPointIsOnLine(Point p, Point l1, Point l2) {
 		return g.intersectPointIsOnLine(p, l1, l2);
+	}
+
+	@Override
+	public Point extendLineLimited(Point from, Point to) {
+		return g.extendLineLimited(from, to);
 	}
 
 }

@@ -59,6 +59,14 @@ public class Point implements Comparable<Point>{
 		return y;
 	}
 	
+	public void setX(double xx) {
+		x = xx;
+	}
+	
+	public void setY(double yy) {
+		y = yy;
+	}
+	
 	public int yI() {
 		return (int) Math.floor(y);
 	}
